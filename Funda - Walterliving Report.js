@@ -43,12 +43,12 @@
         })).then(text => JSON.parse(text))
     }
     const ret = await fetchListingInfo()
-    console.log('ret:', ret)
+    // console.log('ret:', ret)
     if (ret.status !== 'ok') {
         return
     }
     const wozs = ret.changes.filter(el => {
-        console.log(el)
+        // console.log(el)
         return el.source === 'WOZ'
     })
     const askingPrices = ret.changes.filter(el => el.status === "Vraagprijs")
@@ -74,6 +74,26 @@
         </p>
       </div>
     </div>`)
+        if (wozs?.length) {
+
+            const lastWoz = wozs?.reverse()[0]
+            console.log('lastWoz', lastWoz.price)
+            const currentAsking = Number(document.querySelector('.object-header__price').textContent.slice(2).replace(/\,/g, '').replace(' k.k.', ''))
+            console.log('currentAsking', currentAsking)
+            const {change, changeShort, changePct} = calcChange(currentAsking, lastWoz.price)
+            console.log('changePct:', changePct)
+            document.querySelector('.object-header__price').innerHTML = document.querySelector('.object-header__price').innerHTML + `<span style="font-size: smaller;font-weight: normal;margin-left: 5px;">${change > 0 ? '🥵' : '🤑'} WOZ ${change > 0 ? '+' : ''}${changeShort.num}${changeShort.metric} (${changePct}%)</span>`
+        }
+    }
+
+    function calcChange(now, last) {
+        if (!last) {
+            return {change: 0, changePct: 0, changeShort: 0}
+        }
+        const change = now - last
+        const changeShort = shortPrice(change)
+        const changePct = Math.ceil(change / last * 100)
+        return {change, changePct, changeShort}
     }
 
     function genString(arr) {
@@ -83,9 +103,7 @@
             const price = shortPrice(el.price)
             let str = `${el.date}: ${el.human_price.slice(0, 1)}${price.num}${price.metric}`
             if (last) {
-                const change = el.price - last.price
-                const changeShort = shortPrice(change)
-                const changePct = Math.ceil(change / last.price * 100)
+                const {change, changeShort, changePct} = calcChange(el.price, last.price)
                 let color = `#7dd321`
                 if (change < 0) {
                     color = `#e67e22`
