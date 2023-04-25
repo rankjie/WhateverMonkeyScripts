@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  Grab info from Walterliving.
-// @author       Beexio BV
+// @author       Whoever
 // @match        *://www.funda.nl/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=walterliving.com
 // @grant        GM_xmlhttpRequest
