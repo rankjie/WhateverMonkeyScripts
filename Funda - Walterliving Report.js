@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Funda - Walterliving Report
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.1.1
 // @description  Grab info from Walterliving.
-// @author       Whoever
+// @author       Beexio BV
 // @match        *://www.funda.nl/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=walterliving.com
 // @grant        GM_xmlhttpRequest
@@ -78,7 +78,7 @@
 
             const lastWoz = wozs?.reverse()[0]
             console.log('lastWoz', lastWoz.price)
-            const currentAsking = Number(document.querySelector('.object-header__price').textContent.slice(2).replace(/\,/g, '').replace(' k.k.', ''))
+            const currentAsking = Number(document.querySelector('.object-header__price').textContent.split(/\s+/g)[1].replace(/\./g, '').replace(/\,/g, ''))
             console.log('currentAsking', currentAsking)
             const {change, changeShort, changePct} = calcChange(currentAsking, lastWoz.price)
             console.log('changePct:', changePct)
@@ -87,6 +87,7 @@
     }
 
     function calcChange(now, last) {
+        console.log('comparing now - last:', now, last)
         if (!last) {
             return {change: 0, changePct: 0, changeShort: 0}
         }
