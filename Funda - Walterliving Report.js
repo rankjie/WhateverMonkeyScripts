@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Funda - Walterliving Report
 // @namespace    http://tampermonkey.net/
-// @version      0.1.1
+// @version      0.1.2
 // @description  Grab info from Walterliving.
 // @author       Beexio BV
 // @match        *://www.funda.nl/*
@@ -28,6 +28,7 @@
                 "url": location.href
             });
         }
+        console.log('post data:', data);
         return (new Promise((resolve, reject) => {
             GM_xmlhttpRequest({
                 url: 'https://api.walterliving.com/hunter/lookup',
@@ -37,16 +38,28 @@
                 },
                 data: data,
                 onload: (r) => {
+                    console.log('listing onload', r)
+                    if (!['ok', 200].includes(r.status)) {
+                        return resolve(r)
+                    }
                     resolve(r.responseText)
+                },
+                onerror: (e) => {
+                    console.log('get listing error:', e)
+                    reject(e)
                 }
             })
-        })).then(text => JSON.parse(text))
+        })).then(text => {
+            console.log('listing info:', text);
+            try {
+                return JSON.parse(text)
+            } catch (e) {
+                return text
+            }
+        })
     }
     const ret = await fetchListingInfo()
-    // console.log('ret:', ret)
-    if (ret.status !== 'ok') {
-        return
-    }
+    console.log('ret is', ret)
     const wozs = ret.changes.filter(el => {
         // console.log(el)
         return el.source === 'WOZ'
