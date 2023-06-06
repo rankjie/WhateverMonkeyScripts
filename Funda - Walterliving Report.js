@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Funda - Walterliving Report
 // @namespace    http://tampermonkey.net/
-// @version      0.1.2
+// @version      0.1.3
 // @description  Grab info from Walterliving.
 // @author       Beexio BV
 // @match        *://www.funda.nl/*
@@ -77,7 +77,7 @@
           <br>
           ${askingString}
         </p>
-        <p><a href="${ret.report.url}" target="_blank">Walter Report</a></p>
+        <p><a href="${ret.report?.url}" target="_blank">${ret.report?.url ? 'Walter Report' : 'No Walter Report'}</a></p>
       </div>
       <div style="flex: 0 0 50%;">
         <p style="font-size: 12px">
