@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Funda KPN Fiber Check
 // @namespace    http://tampermonkey.net/
-// @version      0.1
-// @description  Get KPN Fiber status and Internet speed. You need your own KPN DEV access from https://developer.kpn.com/ . It's free tho.
-// @author       Whoever
+// @version      0.2
+// @description  Get KPN Fiber status and Internet speed.
+// @author       Beexio BV
 // @match        *://www.funda.nl/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=kpn.com
 // @grant        GM_xmlhttpRequest
@@ -12,6 +12,8 @@
 
 (async function() {
     'use strict';
+    const KPN_API_CLIENT_ID = ""
+    const KPN_API_CLIENT_SECRET = ""
     const KPN_TOKEN_KEY = "KPN_TOKEN_OBJ"
     const address = document.getElementsByClassName('object-header__title')?.[0]?.textContent
     if (!address) {
@@ -28,6 +30,7 @@
     const zipCode = document.getElementsByClassName('object-header__subtitle')?.[0]?.textContent?.split(/\s+/)?.slice(0, 2).join('')
 
     const {access_token} = await getToken()
+    console.log('access_token', access_token)
     console.log(address)
     const ret = await getSpeed(access_token, houseNumber, zipCode, ext)
     console.log('ret:', ret)
@@ -86,20 +89,27 @@
                 return JSON.parse(tokenObj)
             }
         }
-        return fetch('https://api-prd.kpn.com/oauth/client_credential/accesstoken?grant_type=client_credentials', {
-            method: 'POST',
-            headers:{
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            // GET FREE API ACCESS FROM https://developer.kpn.com/
-            body: new URLSearchParams({
-                client_id: "YOUR_KPN_DEV_CLIENT_ID",
-                client_secret: "YOUR_KPN_DEV_CLIENT_SEC"
+        return (new Promise((resolve, reject) => {
+            const data = new URLSearchParams({
+                    client_id: KPN_API_CLIENT_ID,
+                    client_secret: KPN_API_CLIENT_SECRET
+                })
+            console.log('post data:', data, data.toString())
+            GM_xmlhttpRequest({
+                url: 'https://api-prd.kpn.com/oauth/client_credential/accesstoken?grant_type=client_credentials',
+                method: 'POST',
+                headers:{
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                data: data.toString(),
+                onload: (r) => {
+                    console.log('response:', r.responseText)
+                    resolve(r.responseText)
+                }
             })
-        }).then(res => res.json())
-            .then(obj => {
-            localStorage.setItem(KPN_TOKEN_KEY, JSON.stringify(obj))
-            return obj
+        })).then(text => {
+            console.log('text:', text)
+            return JSON.parse(text)
         })
     }
 })();
