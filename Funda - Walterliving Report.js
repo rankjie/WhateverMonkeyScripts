@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Funda - Walterliving Report
 // @namespace    http://tampermonkey.net/
-// @version      0.1.5
+// @version      0.1.6
 // @description  Grab info from Walterliving.
 // @author       Beexio BV
 // @match        *://www.funda.nl/*
@@ -9,7 +9,7 @@
 // @grant        GM_xmlhttpRequest
 // @connect      api.walterliving.com
 // @downloadURL  https://raw.githubusercontent.com/rankjie/WhateverMonkeyScripts/main/Funda%20-%20Walterliving%20Report.js
-// @updateURL  https://raw.githubusercontent.com/rankjie/WhateverMonkeyScripts/main/Funda%20-%20Walterliving%20Report.js
+// @updateURL    https://raw.githubusercontent.com/rankjie/WhateverMonkeyScripts/main/Funda%20-%20Walterliving%20Report.js
 // ==/UserScript==
 
 (async function() {
