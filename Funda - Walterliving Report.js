@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         Funda - Walterliving Report
 // @namespace    http://tampermonkey.net/
-// @version      0.1.6
+// @version      0.1.7
 // @description  Grab info from Walterliving.
 // @author       Beexio BV
 // @match        *://www.funda.nl/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=walterliving.com
 // @grant        GM_xmlhttpRequest
+// @grant        GM_addStyle
 // @connect      api.walterliving.com
 // @downloadURL  https://raw.githubusercontent.com/rankjie/WhateverMonkeyScripts/main/Funda%20-%20Walterliving%20Report.js
 // @updateURL    https://raw.githubusercontent.com/rankjie/WhateverMonkeyScripts/main/Funda%20-%20Walterliving%20Report.js
@@ -16,6 +17,57 @@
     'use strict';
     const listing_title_regexp = /.*:\ (?<address>.*)\ (?<zipcode>\d{4}\ [A-Z]{2})\ (?<city>.*)\ \[funda\]$/;
     const listing_url_regexp = /https:\/\/www\.funda\.nl\/koop\/.*\/.*\/$/;
+    GM_addStyle(`
+--tooltipWidth: auto;
+
+span {
+  position: relative;
+}
+
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+  text-decoration: underline;
+}
+[data-tooltip][data-position=right]::before {
+  top: -50%;
+  left: 105%;
+  transform: translateX(-20px);
+}
+[data-tooltip][data-position=bottom]::before {
+  top: 150%;
+  transform: translateY(-20px);
+}
+[data-tooltip][data-position=left]::before {
+  top: -50%;
+  right: 105%;
+  left: auto;
+  transform: translateX(20px);
+}
+[data-tooltip]:hover::before {
+  transform: translate(0);
+  opacity: 1;
+}
+[data-tooltip]::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  width: var(--tooltipWidth);
+  display: block;
+  color: #FFF;
+  background: #000;
+  padding: 2px 10px;
+  top: -50px;
+  box-shadow: 0px 2px 5px #0000008c;
+  border-radius: 1rem;
+  text-align: center;
+  left: 0;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+`)
     function fetchListingInfo() {
         const found = document.title.match(listing_title_regexp);
         let data
@@ -117,7 +169,7 @@
         let last = null
         for (const el of arr.reverse()) {
             const price = shortPrice(el.price)
-            let str = `${el.date}: ${el.human_price.slice(0, 1)}${price.num}${price.metric}`
+            let str = `<span data-tooltip="${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format(el.price)}" data-position="left">${el.date}: ${el.human_price.slice(0, 1)}${price.num}${price.metric}</span>`
             if (last) {
                 const {change, changeShort, changePct} = calcChange(el.price, last.price)
                 let color = `#7dd321`
