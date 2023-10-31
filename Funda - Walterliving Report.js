@@ -169,7 +169,7 @@ span {
         let last = null
         for (const el of arr.reverse()) {
             const price = shortPrice(el.price)
-            let str = `<span data-tooltip="${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format(el.price)}" data-position="left">${el.date}: ${el.human_price.slice(0, 1)}${price.num}${price.metric}</span>`
+            let str = `<span data-tooltip="${el.human_price}" data-position="left">${el.date}: ${el.human_price.slice(0, 1)}${price.num}${price.metric}</span>`
             if (last) {
                 const {change, changeShort, changePct} = calcChange(el.price, last.price)
                 let color = `#7dd321`
