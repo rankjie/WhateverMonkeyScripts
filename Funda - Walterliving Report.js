@@ -31,12 +31,13 @@
             let ret = document.getElementsByClassName('object-header__pricing')[0]
             if (location.href.includes('/detail/')) {
                 ret = document.getElementsByClassName('object-header__container')[0].parentElement.nextElementSibling
+                const newElement = document.createElement("div")
+                newElement.setAttribute('id', 'walter-info')
+                newElement.setAttribute('class', 'w-full')
+                ret.appendChild(newElement)
+                return newElement
             }
-            const newElement = document.createElement("div")
-            newElement.setAttribute('id', 'walter-info')
-            newElement.setAttribute('class', 'w-full')
-            ret.appendChild(newElement)
-            return newElement
+            return ret
         }
         GM_addStyle(`
 --tooltipWidth: auto;
@@ -147,7 +148,7 @@ span {
             let targetElement = getTargetElement()
             console.log('targetElement is', targetElement);
             targetElement.innerHTML = `
-    <div style="display:flex" class="w-full">
+    <div style="display:flex" class="w-full" id="real-walterinfo">
       <div style="flex: 0 0 50%;">
         <p style="font-size: 12px">
           <b>Asking:</b>
@@ -165,7 +166,6 @@ span {
       </div>
     </div>`
             if (wozs?.length) {
-
                 const lastWoz = wozs?.reverse()[0]
                 console.log('lastWoz', lastWoz.price)
                 const currentAsking = Number(document.querySelector('.object-header__price').textContent.split(/\s+/g)[1].replace(/\./g, '').replace(/\,/g, ''))
