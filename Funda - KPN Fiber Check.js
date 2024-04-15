@@ -26,13 +26,16 @@
         const KPN_TOKEN_KEY = "KPN_TOKEN_OBJ"
 
         const getTargetElement = () => {
-            let ret = document.getElementsByClassName('object-header__pricing')[0]
+            let ret = document.getElementsByClassName('object-header__pricing')[0].parentElement
             if (location.href.includes('/detail/')) {
                 ret = document.getElementsByClassName('object-header__container')[0].parentElement.parentElement
+                // const newElement = document.createElement("div")
+                // newElement.setAttribute('id', 'walter-info')
+                // newElement.setAttribute('class', 'w-full')
+                // ret.appendChild(newElement)
+                // return newElement
             }
-            const newElement = document.createElement("div")
-            ret.appendChild(newElement)
-            return newElement
+            return ret
         }
 
         let targetElement = getTargetElement()
@@ -59,7 +62,6 @@
         main()
 
         async function main() {
-            showInfo('Fetching KPN Fiber Info...')
 
             try {
                 if (!newFunda) {
@@ -76,6 +78,7 @@
                     ext = houseNumber
                     houseNumber = addressArr[addressArr.length - 2]
                 }
+                showInfo('Fetching KPN Fiber Info...')
                 const {access_token} = await getToken()
                 console.log('access_token', access_token)
 
@@ -95,14 +98,25 @@
 
         function displaySpeed(infoObj) {
             getTargetElement().insertAdjacentHTML('afterEnd', `
-    <div class="object-header__pricing fd-text-size-l fd-flex--bp-m fd-align-items-center" style="font-size: 1rem" id="kpn-info">
-      <p class="object-header__price" style="font-size: 1rem;white-space: initial;">KPN Fiber: ${infoObj.fixed_info.fiber_access ? '✅' : '❌'} | ⬇️ ${infoObj.bandwidth.down || '-'}Mbps / ⬆️ ${infoObj.bandwidth.up || '-'}Mbps</p>
-    </div>
-
-    <details>
-      <summary style="cursor:pointer">KPN Details</summary>
-      <pre style="font-size:8px">${JSON.stringify(ret, null, 2)}</pre>
-    </details>`)
+    <div class="grid grid-cols-1" id="kpn-info">
+      <div>
+        <p class="mb-0 color-secondary text-xs">Zip: <b>${zipCode}</b>; HouseNumber: <b>${houseNumber}</b>; Ext: <b>${ext}</b></p>
+      </div>
+      <div>
+        <p class="object-header__price" style="font-size: 1rem;white-space: initial;">KPN Fiber: ${infoObj.fixed_info.fiber_access ? '✅' : '❌'} |
+          <span class="px-2 py-1 bg-neutral-80-darken-2 rounded-full color-[#fff]">⬇️ ${infoObj.bandwidth.down || '-'}Mbps
+           /
+           ⬆️ ${infoObj.bandwidth.up || '-'}Mbps
+          </span>
+        </p>
+      <div>
+      <div>
+        <details>
+          <summary class="text-xs" style="cursor:pointer">Details</summary>
+          <pre style="font-size:8px">${JSON.stringify(ret, null, 2)}</pre>
+        </details>
+      </div>
+    </div>`)
         }
 
         function showInfo(str) {
@@ -112,8 +126,9 @@
             console.log('showing info:', str)
             getTargetElement().insertAdjacentHTML('afterEnd', `
     <div id="kpn-working">
-        <p style="font-size: 1rem;white-space: initial;">${str || 'Fetching KPN Fiber Info...'}</p>
-        <a onclick="main()">Re-try</a>
+        <p class="mb-0 color-secondary text-xs">Zip: <b>${zipCode}</b>; HouseNumber: <b>${houseNumber}</b>; Ext: <b>${ext}</b></p>
+        <p class="object-header__price" style="font-size: 1rem;white-space: initial;">${str || 'Fetching KPN Fiber Info...'}</p>
+        <a class="m-0" onclick="main()">Re-try</a>
     </div>`)
         }
 
@@ -158,8 +173,8 @@
             }
             return (new Promise((resolve, reject) => {
                 const data = new URLSearchParams({
-                    client_id: "<REPLACE_WITH_YOUR_OWN",
-                    client_secret: "<REPLACE_WITH_YOUR_OWN>"
+                    client_id: "[USE YOUR OWN]",
+                    client_secret: "[USE YOUR OWN]"
                 })
                 console.log('post data:', data, data.toString())
                 GM_xmlhttpRequest({
