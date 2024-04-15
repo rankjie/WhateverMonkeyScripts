@@ -18,18 +18,38 @@
 (async function() {
     'use strict';
 
-    const actualFuction = async () => {
-        const sleep = async (t) => {
-            return new Promise((resolve, reject) => {
-                setTimeout(resolve, t)
-            })
+    const sleep = async (t) => {
+        return new Promise((resolve, reject) => {
+            setTimeout(resolve, t)
+        })
+    }
+
+    const getCurrentAskingSpan = async () => {
+        let span = document.querySelector('.object-header__price')
+        if (!location.href.includes('/detail/')) {
+            if (span) {
+                return span
+            }
         }
+        let tried = 0
+        do {
+            span = document.querySelector('.object-header__container').parentElement.nextSibling.nextSibling.querySelector('span')
+            if (span) {
+                return span
+            }
+            console.log('askingSpan is null, sleep for 500ms then try again..')
+            await sleep(500)
+            tried += 1
+        } while (tried < 5)
+    }
+
+    const actualFundaFuction = async () => {
         // await sleep(1.5 * 1000);
         const listing_title_regexp = /.*:\ (?<address>.*)\ (?<zipcode>\d{4}\ [A-Z]{2})\ (?<city>.*)\ \[funda\]$/;
         const listing_url_regexp = /https:\/\/www\.funda\.nl\/koop\/.*\/.*\/$/;
         const getTargetElement = () => {
-            let ret = document.getElementsByClassName('object-header__pricing')[0]
-            if (location.href.includes('/detail/')) {
+            let ret = document.getElementsByClassName('object-header__pricing')?.[0]
+            if (!ret || location.href.includes('/detail/')) {
                 ret = document.getElementsByClassName('object-header__container')[0].parentElement.nextElementSibling
                 const newElement = document.createElement("div")
                 newElement.setAttribute('id', 'walter-info')
@@ -143,8 +163,8 @@ span {
         const askingPrices = ret.changes.filter(el => el.status === "Vraagprijs")
         const wozString = genString(wozs)
         const askingString = genString(askingPrices)
-        displaySpeed(ret)
-        function displaySpeed(infoObj) {
+        await displaySpeed(ret)
+        async function displaySpeed(infoObj) {
             let targetElement = getTargetElement()
             console.log('targetElement is', targetElement);
             targetElement.insertAdjacentHTML('afterend', `
@@ -168,11 +188,13 @@ span {
             if (wozs?.length) {
                 const lastWoz = wozs?.reverse()[0]
                 console.log('lastWoz', lastWoz.price)
-                const currentAsking = Number(document.querySelector('.object-header__price').textContent.split(/\s+/g)[1].replace(/\./g, '').replace(/\,/g, ''))
+                const askingSpan = await getCurrentAskingSpan()
+                console.log('askingSpan is', askingSpan)
+                const currentAsking = Number(askingSpan.textContent.split(/\s+/g)[1].replace(/\./g, '').replace(/\,/g, ''))
                 console.log('currentAsking', currentAsking)
                 const {change, changeShort, changePct} = calcChange(currentAsking, lastWoz.price)
                 console.log('changePct:', changePct)
-                document.querySelector('.object-header__price').innerHTML = document.querySelector('.object-header__price').innerHTML + `<span style="font-size: smaller;font-weight: normal;margin-left: 5px;">${change > 0 ? '🥵' : '🤑'} WOZ ${change > 0 ? '+' : ''}${changeShort.num}${changeShort.metric} (${changePct}%)</span>`
+                askingSpan.insertAdjacentHTML('afterend', `<span style="font-size: smaller;font-weight: normal;margin-left: 5px;">${change > 0 ? '🥵' : '🤑'} WOZ ${change > 0 ? '+' : ''}${changeShort.num}${changeShort.metric} (${changePct}%)</span>`)
             }
         }
 
@@ -233,7 +255,7 @@ span {
     const interval = setInterval(() => {
         console.log(document.readyState)
         if (document.readyState === 'complete') {
-            actualFuction()
+            actualFundaFuction()
             clearInterval(interval)
         }
     }, 500)
