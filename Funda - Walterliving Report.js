@@ -147,8 +147,8 @@ span {
         function displaySpeed(infoObj) {
             let targetElement = getTargetElement()
             console.log('targetElement is', targetElement);
-            targetElement.innerHTML = `
-    <div style="display:flex" class="w-full" id="real-walterinfo">
+            targetElement.insertAdjacentHTML('afterend', `
+    <div class="w-full grid grid-cols-2" id="real-walterinfo">
       <div style="flex: 0 0 50%;">
         <p style="font-size: 12px">
           <b>Asking:</b>
@@ -164,7 +164,7 @@ span {
           ${wozString}
         </p>
       </div>
-    </div>`
+    </div>`)
             if (wozs?.length) {
                 const lastWoz = wozs?.reverse()[0]
                 console.log('lastWoz', lastWoz.price)
