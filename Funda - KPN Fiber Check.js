@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Funda KPN Fiber Check
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  Get KPN Fiber status and Internet speed.
 // @author       Beexio BV
 // @match        *://www.funda.nl/*
@@ -26,16 +26,13 @@
         const KPN_TOKEN_KEY = "KPN_TOKEN_OBJ"
 
         const getTargetElement = () => {
-            let ret = document.getElementsByClassName('object-header__pricing')[0].parentElement
-            if (location.href.includes('/detail/')) {
-                ret = document.getElementsByClassName('object-header__container')[0].parentElement.parentElement
-                // const newElement = document.createElement("div")
-                // newElement.setAttribute('id', 'walter-info')
-                // newElement.setAttribute('class', 'w-full')
-                // ret.appendChild(newElement)
-                // return newElement
-            }
-            return ret
+            let ret = document.getElementById('about')
+            const newElement = document.createElement("div")
+            newElement.setAttribute('id', 'walter-info')
+            newElement.setAttribute('class', 'w-full')
+            ret.appendChild(newElement)
+            return newElement
+            //return ret
         }
 
         let targetElement = getTargetElement()
@@ -52,9 +49,9 @@
         if (location.href.includes('/detail/')) {
             console.log('new funda');
             newFunda = true;
-            addressArr = document.getElementsByClassName('object-header__container')[0].firstChild.textContent?.split(/\s+/)
-            houseNumber = document.getElementsByClassName('object-header__container')[0].firstChild.textContent?.split(/\s+/).pop()
-            zipCode = document.getElementsByClassName('object-header__container')[0].children[1].textContent?.split(/\s+/)?.slice(0, 2).join('')
+            addressArr = document.getElementById('about').firstElementChild.firstElementChild.firstElementChild.textContent
+            houseNumber = document.getElementById('about').firstElementChild.getAttribute('housenumber')
+            zipCode = document.getElementById('about').firstElementChild.getAttribute('postcode')
         }
 
 
@@ -62,22 +59,7 @@
         main()
 
         async function main() {
-
             try {
-                if (!newFunda) {
-                    const address = document.getElementsByClassName('object-header__title')?.[0]?.textContent
-                    if (!address) {
-                        console.log('can not parse address')
-                        return
-                    }
-                    addressArr = address.split(/\s+/)
-                    houseNumber = addressArr[addressArr.length - 1]
-                    zipCode = document.getElementsByClassName('object-header__subtitle')?.[0]?.textContent?.split(/\s+/)?.slice(0, 2).join('')
-                }
-                if (!Number(houseNumber) || !isNaN(Number(addressArr[addressArr.length - 2]))) {
-                    ext = houseNumber
-                    houseNumber = addressArr[addressArr.length - 2]
-                }
                 showInfo('Fetching KPN Fiber Info...')
                 const {access_token} = await getToken()
                 console.log('access_token', access_token)
@@ -173,8 +155,8 @@
             }
             return (new Promise((resolve, reject) => {
                 const data = new URLSearchParams({
-                    client_id: "[USE YOUR OWN]",
-                    client_secret: "[USE YOUR OWN]"
+                    client_id: "",
+                    client_secret: ""
                 })
                 console.log('post data:', data, data.toString())
                 GM_xmlhttpRequest({
