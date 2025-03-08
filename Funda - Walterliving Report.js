@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Funda - Walterliving Report
 // @namespace    http://tampermonkey.net/
-// @version      0.1.9
+// @version      0.2.0
 // @description  Grab info from Walterliving.
 // @author       Beexio BV
 // @match        *://www.funda.nl/*
@@ -33,11 +33,15 @@
         }
         let tried = 0
         do {
-            span = document.querySelector('.object-header__container').parentElement.nextSibling.nextSibling.querySelector('span')
-            if (span) {
-                return span
+            try {
+                span = document.getElementById('about').firstElementChild.nextSibling.nextSibling.firstElementChild.firstElementChild.firstElementChild
+                if (span) {
+                    return span
+                }
+                console.log('askingSpan is null, sleep for 500ms then try again..')
+            } catch (e) {
+                console.log('get askingSpan failed, sleep for 500ms then try again. Err is:', e)
             }
-            console.log('askingSpan is null, sleep for 500ms then try again..')
             await sleep(500)
             tried += 1
         } while (tried < 5)
@@ -48,16 +52,20 @@
         const listing_title_regexp = /.*:\ (?<address>.*)\ (?<zipcode>\d{4}\ [A-Z]{2})\ (?<city>.*)\ \[funda\]$/;
         const listing_url_regexp = /https:\/\/www\.funda\.nl\/koop\/.*\/.*\/$/;
         const getTargetElement = () => {
-            let ret = document.getElementsByClassName('object-header__pricing')?.[0]
-            if (!ret || location.href.includes('/detail/')) {
-                ret = document.getElementsByClassName('object-header__container')[0].parentElement.nextElementSibling
-                const newElement = document.createElement("div")
-                newElement.setAttribute('id', 'walter-info')
-                newElement.setAttribute('class', 'w-full')
-                ret.appendChild(newElement)
-                return newElement
-            }
-            return ret
+            let ret = document.getElementById('about')
+//            if (!ret || location.href.includes('/detail/')) {
+//                ret = document.getElementsByClassName('object-header__container')[0].parentElement.nextElementSibling
+//                const newElement = document.createElement("div")
+//                newElement.setAttribute('id', 'walter-info')
+//                newElement.setAttribute('class', 'w-full')
+//                ret.appendChild(newElement)
+//                return newElement
+//            }
+            const newElement = document.createElement("div")
+            newElement.setAttribute('id', 'walter-info')
+            newElement.setAttribute('class', 'w-full')
+            ret.appendChild(newElement)
+            return newElement
         }
         GM_addStyle(`
 --tooltipWidth: auto;
@@ -111,19 +119,21 @@ span {
 }
 `)
         function fetchListingInfo() {
-            const found = document.title.match(listing_title_regexp);
+            const addressArr = document.getElementById('about').firstElementChild.firstElementChild.firstElementChild.textContent
+            const houseNumber = document.getElementById('about').firstElementChild.getAttribute('housenumber')
+            const zipCode = document.getElementById('about').firstElementChild.getAttribute('postcode')
             let data
-            if (found && found.groups && found.groups.zipcode && found.groups.address) {
-                data = JSON.stringify({
-                    "url": location.href,
-                    "address": found.groups.address,
-                    "zipcode": found.groups.zipcode
-                });
-            } else {
-                data = JSON.stringify({
-                    "url": location.href
-                });
-            }
+            data = JSON.stringify({
+                "url": location.href,
+                "address": addressArr,
+                "zipcode": zipCode
+            });
+//            if (found && found.groups && found.groups.zipcode && found.groups.address) {
+//            } else {
+//                data = JSON.stringify({
+//                    "url": location.href
+//                });
+//            }
             console.log('post data:', data);
             return (new Promise((resolve, reject) => {
                 GM_xmlhttpRequest({
