@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Funda - Walterliving Report
 // @namespace    http://tampermonkey.net/
-// @version      0.2.0
+// @version      0.2.1
 // @description  Grab info from Walterliving.
 // @author       Beexio BV
 // @match        *://www.funda.nl/*
@@ -18,6 +18,33 @@
 (async function() {
     'use strict';
 
+    const findSpanWithText = (text) => {
+        const textNodes = [];
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+
+        // Find text nodes that start with '€ '
+        let node;
+        while (node = walker.nextNode()) {
+            if (node.textContent.trim().startsWith(text)) {
+                textNodes.push(node);
+            }
+        }
+
+        // Get the parent elements of these text nodes
+        const priceElements = textNodes.map(node => node.parentElement);
+
+        // Display the first match (if you expect only one)
+        if (priceElements.length > 0) {
+            return priceElements[0]
+        }
+        return null
+    }
+
     const sleep = async (t) => {
         return new Promise((resolve, reject) => {
             setTimeout(resolve, t)
@@ -25,16 +52,10 @@
     }
 
     const getCurrentAskingSpan = async () => {
-        let span = document.querySelector('.object-header__price')
-        if (!location.href.includes('/detail/')) {
-            if (span) {
-                return span
-            }
-        }
         let tried = 0
         do {
             try {
-                span = document.getElementById('about').firstElementChild.nextSibling.nextSibling.firstElementChild.firstElementChild.firstElementChild
+                const span = findSpanWithText('€ ')
                 if (span) {
                     return span
                 }
@@ -119,9 +140,10 @@ span {
 }
 `)
         function fetchListingInfo() {
-            const addressArr = document.getElementById('about').firstElementChild.firstElementChild.firstElementChild.textContent
-            const houseNumber = document.getElementById('about').firstElementChild.getAttribute('housenumber')
-            const zipCode = document.getElementById('about').firstElementChild.getAttribute('postcode')
+            const addrElement = document.querySelector('div[neighborhoodidentifier][city][postcode][housenumber]')
+            const addressArr = addrElement.textContent
+            const houseNumber = addrElement.getAttribute('housenumber')
+            const zipCode = addrElement.getAttribute('postcode')
             let data
             data = JSON.stringify({
                 "url": location.href,
