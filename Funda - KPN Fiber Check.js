@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Funda KPN Fiber Check
 // @namespace    http://tampermonkey.net/
-// @version      0.6
+// @version      0.7
 // @description  Get KPN Fiber status and Internet speed.
 // @author       Beexio BV
 // @match        *://www.funda.nl/*
@@ -52,7 +52,11 @@
             houseNumber = addrElement.getAttribute('housenumber')
             zipCode = addrElement.getAttribute('postcode')
             const fullAddrStr = addrElement.getElementsByClassName('block')[0].textContent
+            const houseNumberAndExt = fullAddrStr.split(/\s+/)?.pop?.() || ""
             ext = fullAddrStr.split(/\-|\s+/)?.pop?.() || ""
+            if (ext === houseNumberAndExt) {
+                ext = ""
+            }
         }
 
 
